@@ -2,11 +2,11 @@
 import { useState, useEffect, useCallback } from "react";
 
 const BUCKETS = {
-  needs_response: { label: "Needs Response", color: "#e74c3c", bg: "#2d1518", icon: "\u{1F534}" },
-  financial: { label: "Financial", color: "#f39c12", bg: "#2d2415", icon: "\u{1F4B0}" },
-  lccs: { label: "LCCS", color: "#3498db", bg: "#152a2d", icon: "\u{1F3EB}" },
-  vendor_ad: { label: "Vendor / Ad", color: "#95a5a6", bg: "#1e2124", icon: "\u{1F4E2}" },
-  archive: { label: "OK to Archive", color: "#27ae60", bg: "#152d1a", icon: "\u2705" },
+  needs_response: { label: "Needs Response", color: "#e74c3c", bg: "#2d1518", icon: "🔴" },
+  financial: { label: "Financial", color: "#f39c12", bg: "#2d2415", icon: "💰" },
+  lccs: { label: "LCCS", color: "#3498db", bg: "#152a2d", icon: "🏫" },
+  vendor_ad: { label: "Vendor / Ad", color: "#95a5a6", bg: "#1e2124", icon: "📢" },
+  archive: { label: "OK to Archive", color: "#27ae60", bg: "#152d1a", icon: "✅" },
 };
 
 const PRIORITY_COLORS = { HIGH: "#e74c3c", MEDIUM: "#f39c12", LOW: "#7f8c8d" };
@@ -39,8 +39,8 @@ export default function EmailDashboard() {
     const d = new Date(iso);
     const now = new Date();
     const diff = now - d;
-    if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`;
-    if (diff < 86400000) return `${Math.floor(diff / 3600000)}h ago`;
+    if (diff < 3600000) return Math.floor(diff / 60000) + "m ago";
+    if (diff < 86400000) return Math.floor(diff / 3600000) + "h ago";
     return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
   };
   const styles = {
@@ -50,7 +50,7 @@ export default function EmailDashboard() {
     subtitle: { fontSize: "13px", color: "#8b949e", marginTop: "4px" },
     refreshBtn: { padding: "8px 16px", backgroundColor: "#21262d", border: "1px solid #30363d", borderRadius: "6px", color: "#e6edf3", cursor: "pointer", fontSize: "14px" },
     tabs: { display: "flex", gap: "8px", marginBottom: "20px", flexWrap: "wrap" },
-    tab: (active, color) => ({ padding: "8px 16px", borderRadius: "20px", border: `1px solid ${active ? color : "#30363d"}`, backgroundColor: active ? color + "22" : "#161b22", color: active ? color : "#8b949e", cursor: "pointer", fontSize: "13px", fontWeight: active ? "600" : "400", transition: "all 0.15s" }),
+    tab: (active, color) => ({ padding: "8px 16px", borderRadius: "20px", border: "1px solid " + (active ? color : "#30363d"), backgroundColor: active ? color + "22" : "#161b22", color: active ? color : "#8b949e", cursor: "pointer", fontSize: "13px", fontWeight: active ? "600" : "400", transition: "all 0.15s" }),
     badge: (color) => ({ backgroundColor: color, color: "#fff", borderRadius: "10px", padding: "1px 8px", fontSize: "11px", marginLeft: "6px", fontWeight: "bold" }),
     emailCard: { backgroundColor: "#161b22", border: "1px solid #30363d", borderRadius: "8px", padding: "14px 16px", marginBottom: "8px" },
     emailFrom: { fontSize: "15px", fontWeight: "600", color: "#e6edf3" },
@@ -61,13 +61,13 @@ export default function EmailDashboard() {
     draftBadge: { backgroundColor: "#1f6feb22", color: "#58a6ff", border: "1px solid #1f6feb44", borderRadius: "4px", padding: "2px 8px", fontSize: "11px" },
     emptyState: { textAlign: "center", padding: "60px 20px", color: "#6e7681" },
     statsRow: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))", gap: "10px", marginBottom: "20px" },
-    statCard: (color) => ({ backgroundColor: "#161b22", border: `1px solid ${color}44`, borderRadius: "8px", padding: "12px", textAlign: "center" }),
+    statCard: (color) => ({ backgroundColor: "#161b22", border: "1px solid " + color + "44", borderRadius: "8px", padding: "12px", textAlign: "center" }),
     statNum: (color) => ({ fontSize: "28px", fontWeight: "bold", color }),
     statLabel: { fontSize: "11px", color: "#8b949e", marginTop: "2px", textTransform: "uppercase", letterSpacing: "0.5px" },
   };
 
   if (loading && !data) {
-    return (<div style={styles.container}><div style={styles.emptyState}><div style={{ fontSize: "36px", marginBottom: "12px" }}>\u{1F4E8}</div><p>Loading email triage data...</p></div></div>);
+    return (<div style={styles.container}><div style={styles.emptyState}><div style={{ fontSize: "36px", marginBottom: "12px" }}>📨</div><p>Loading email triage data...</p></div></div>);
   }
 
   const buckets = data?.buckets || {};
@@ -79,12 +79,12 @@ export default function EmailDashboard() {
           <h1 style={styles.title}>Email Triage</h1>
           <div style={styles.subtitle}>
             {totalEmails} emails processed across {data?.runs || 0} runs
-            {data?.updated && ` \u00B7 Last updated ${fmtTime(data.updated)}`}
+            {data?.updated && (" · Last updated " + fmtTime(data.updated))}
           </div>
         </div>
         <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-          <a href="/" style={{ ...styles.refreshBtn, textDecoration: "none" }}>\u2190 Board</a>
-          <button onClick={fetchData} style={styles.refreshBtn}>\u21BB Refresh</button>
+          <a href="/" style={{ ...styles.refreshBtn, textDecoration: "none" }}>← Board</a>
+          <button onClick={fetchData} style={styles.refreshBtn}>↻ Refresh</button>
         </div>
       </div>
 
@@ -138,8 +138,8 @@ export default function EmailDashboard() {
       )}
 
       <div style={{ textAlign: "center", padding: "24px", color: "#6e7681", fontSize: "13px", borderTop: "1px solid #21262d", marginTop: "24px" }}>
-        Synced with Claude Cowork \u00B7 Triage runs every 30 min
+        Synced with Claude Cowork · Triage runs every 30 min
       </div>
     </div>
   );
-        }
+              }
