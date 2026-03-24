@@ -1,16 +1,24 @@
-import { Redis } from "@upstash/redis";
+import Redis from "ioredis";
 import { NextResponse } from "next/server";
 
-const redis = new Redis({
-  url: process.env.KV_REST_API_URL,
-  token: process.env.KV_REST_API_TOKEN,
-});
+let redis;
+function getRedis() {
+  if (!redis) {
+    redis = new Redis(process.env.KV_REDIS_URL, {
+      maxRetriesPerRequest: 3,
+      lazyConnect: true,
+    });
+  }
+  return redis;
+}
 
 const KEY = "todos";
 
 export async function GET() {
   try {
-    const todos = (await redis.get(KEY)) || [];
+    const r = getRedis();
+    const raw = await r.get(KEY);
+    const todos = raw ? JSON.parse(raw) : [];
     return NextResponse.json({ todos, updated: new Date().toISOString() });
   } catch (e) {
     return NextResponse.json({ error: e.message }, { status: 500 });
@@ -23,7 +31,8 @@ export async function POST(req) {
     if (!Array.isArray(todos)) {
       return NextResponse.json({ error: "todos must be an array" }, { status: 400 });
     }
-    await redis.set(KEY, todos);
+    const r = getRedis();
+    await r.set(KEY, JSON.stringify(todos));
     return NextResponse.json({ ok: true, count: todos.length });
   } catch (e) {
     return NextResponse.json({ error: e.message }, { status: 500 });
@@ -33,7 +42,9 @@ export async function POST(req) {
 export async function PATCH(req) {
   try {
     const { action, todo, id } = await req.json();
-    let todos = (await redis.get(KEY)) || [];
+    const r = getRedis();
+    const raw = await r.get(KEY);
+    let todos = raw ? JSON.parse(raw) : [];
 
     if (action === "add") {
       const newTodo = {
@@ -59,7 +70,7 @@ export async function PATCH(req) {
       return NextResponse.json({ error: "Invalid action" }, { status: 400 });
     }
 
-    await redis.set(KEY, todos);
+    await r.set(KEY, JSON.stringify(todos));
     return NextResponse.json({ ok: true, todos });
   } catch (e) {
     return NextResponse.json({ error: e.message }, { status: 500 });
